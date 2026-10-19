@@ -32,3 +32,11 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Node / Frontend
+node_modules/
+console/dist/
+
+# Node / Frontend
+node_modules/
+console/dist/
