@@ -13,20 +13,29 @@ dependencies = [
     "pydantic>=2",
     "sse-starlette",
     "httpx",
-    "fastmcp",
 ]
 
 [project.optional-dependencies]
+# MCP server (homeops-mcp). Install in the main environment (.venv).
+server = [
+    "fastmcp",
+]
+# Strands agent + brain. Install in a SEPARATE environment (venv-agent):
+# strands-agents needs mcp<2.2 while fastmcp needs mcp 2.x.
+agent = [
+    "strands-agents[gemini]",
+    "python-dotenv",
+]
 dev = [
     "pytest",
     "pytest-asyncio",
-    "python-dotenv",
-    "strands-agents",
 ]
 
 [project.scripts]
-homeops-agent = "homeops.agent:__main__"
+homeops = "homeops.cli:main"
 homeops-mcp = "homeops.mcp_server:main"
+homeops-agent = "homeops.agent:__main__"
+homeops-brain = "homeops.brain:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/homeops"]
