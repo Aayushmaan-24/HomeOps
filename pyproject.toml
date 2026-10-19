@@ -13,6 +13,7 @@ dependencies = [
     "pydantic>=2",
     "sse-starlette",
     "httpx",
+    "fastmcp",
 ]
 
 [project.optional-dependencies]
@@ -20,6 +21,9 @@ dev = [
     "pytest",
     "pytest-asyncio",
 ]
+
+[project.scripts]
+homeops-mcp = "homeops.mcp_server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/homeops"]
