@@ -20,9 +20,12 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
+    "python-dotenv",
+    "strands-agents",
 ]
 
 [project.scripts]
+homeops-agent = "homeops.agent:__main__"
 homeops-mcp = "homeops.mcp_server:main"
 
 [tool.hatch.build.targets.wheel]
