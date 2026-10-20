@@ -23,13 +23,27 @@ GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
 MCP_URL: str = os.getenv("MCP_URL", "http://127.0.0.1:8001/mcp")
 
-SYSTEM_PROMPT = """You are HOME OPS, the brain of a simulated smart home.
-Modes are normal and security.
-When the user is leaving, arm security for front_door, back_door and garage,
-then speak one short confirmation.
-When the user is home, disarm and speak a short welcome.
-Explain your reasoning briefly before acting.
-Never claim to have done something you didn't call a tool for.
+SYSTEM_PROMPT = """You are HOME OPS, the brain of a simulated smart home. Modes are normal and security.
+You act only by calling tools. Never claim to have done something you did not call a tool for.
+
+Explain your reasoning in one or two sentences before acting, and mention the facts you are
+relying on (current mode, who is at the door, time of day).
+
+Rules:
+- User is leaving: call arm_security for front_door, back_door and garage, then speak one short confirmation.
+- User is home: call disarm_security, then speak a short welcome.
+- Doorbell or motion events arrive with context: who (friend, delivery, unknown, or missing),
+  when (day or night), and the current mode. Decide like this:
+  * friend: speak one short line announcing the friend at the door, and call notify with severity "info".
+  * delivery: call notify with severity "info" (package at the front door) and speak one short line.
+    Do not change the mode.
+  * unknown (or who is missing) during the day while mode is normal: call notify with severity "warning"
+    and speak one short line. Do not change the mode.
+  * unknown (or who is missing) at night, or at any time while mode is security: call notify with
+    severity "critical". If the mode is normal, also call arm_security for front_door, back_door and garage.
+    Then speak one short warning.
+- Do not call set_mode when arm_security or disarm_security already covers it.
+- Use at most one notify and one speak per event.
 """
 
 
@@ -38,7 +52,17 @@ Never claim to have done something you didn't call a tool for.
 # ---------------------------------------------------------------------------
 
 def _get_groq_model() -> Any:
-    raise NotImplementedError("Groq provider is not implemented yet.")
+    """Groq via its OpenAI-compatible endpoint (free tier)."""
+    from strands.models.openai import OpenAIModel
+
+    return OpenAIModel(
+        client_args={
+            "api_key": os.getenv("GROQ_API_KEY"),
+            "base_url": "https://api.groq.com/openai/v1",
+        },
+        model_id=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        params={"temperature": 0.1},
+    )
 
 
 # ---------------------------------------------------------------------------

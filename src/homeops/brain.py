@@ -79,7 +79,12 @@ def _handle_sensor_event(event: dict[str, Any]) -> None:
 
     mode = state.get("mode", "normal")
     event_type = event.get("type", "")
-    text = f"Event: {event_type} at {zone}. Current mode is {mode}. Decide what to do and use your tools."
+    who = payload.get("who") or "unknown"
+    when = payload.get("when") or "unspecified"
+    text = (
+        f"Event: {event_type} at {zone}. Who: {who}. Time of day: {when}. "
+        f"Current mode is {mode}. Decide what to do and use your tools."
+    )
     try:
         run(text)
         logger.info("handled sensor.%s -> run(text)", event_type)
