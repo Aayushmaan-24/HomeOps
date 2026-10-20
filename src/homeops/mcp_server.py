@@ -91,6 +91,21 @@ def speak(text: str, reason: str = "set via MCP") -> str:
     return f"said: {text}"
 
 
+def notify(title: str, body: str, severity: Literal["info", "warning", "critical"] = "info") -> str:
+    """Send a notification to the homeowner (shown on the TV console).
+
+    Use severity "info" for routine updates (e.g. a delivery arrived),
+    "warning" for things worth attention, and "critical" for a possible
+    security threat that needs immediate attention.
+    """
+    _post_agent_action(
+        "notify",
+        {"title": title, "body": body, "severity": severity},
+        f"notified ({severity}): {title}",
+    )
+    return f"notified ({severity}): {title}"
+
+
 # ---------------------------------------------------------------------------
 # FastMCP server setup
 # ---------------------------------------------------------------------------
@@ -104,6 +119,7 @@ def make_mcp_server() -> FastMCP:
     server.tool(arm_security)
     server.tool(disarm_security)
     server.tool(speak)
+    server.tool(notify)
 
     return server
 
