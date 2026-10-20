@@ -84,14 +84,24 @@ def cmd_status() -> None:
         print(f"  {ev['ts']} {ev['type']} {ev['source']} {summary}")
 
 
-def cmd_sim_doorbell() -> None:
-    """POST sensor.doorbell event."""
-    _post_event("sensor.doorbell", "event-sim", {"zone": "front_door"})
+def cmd_sim_doorbell(who=None, when=None) -> None:
+    """POST sensor.doorbell event (optionally with who is at the door and time of day)."""
+    payload = {"zone": "front_door"}
+    if who:
+        payload["who"] = who
+    if when:
+        payload["when"] = when
+    _post_event("sensor.doorbell", "event-sim", payload)
 
 
-def cmd_sim_motion() -> None:
-    """POST sensor.motion event."""
-    _post_event("sensor.motion", "event-sim", {"zone": "front_door"})
+def cmd_sim_motion(who=None, when=None) -> None:
+    """POST sensor.motion event (optionally with who and time of day)."""
+    payload = {"zone": "front_door"}
+    if who:
+        payload["who"] = who
+    if when:
+        payload["when"] = when
+    _post_event("sensor.motion", "event-sim", payload)
 
 
 def cmd_watch() -> None:
@@ -117,6 +127,10 @@ def main() -> None:
     p_doorbell = sub.add_parser("sim", help="Simulate events")
     p_doorbell.add_argument("event_type", choices=["doorbell", "motion"],
                             help="Type of event to simulate")
+    p_doorbell.add_argument("--who", choices=["friend", "delivery", "unknown"],
+                            help="Who is at the door")
+    p_doorbell.add_argument("--when", choices=["day", "night"],
+                            help="Time of day")
     p_doorbell.set_defaults(func=None)
 
     p_watch = sub.add_parser("watch", help="Stream events via SSE")
@@ -127,7 +141,7 @@ def main() -> None:
         parser.print_help()
         sys.exit(1)
     if args.command == "sim":
-        (cmd_sim_doorbell if args.event_type == "doorbell" else cmd_sim_motion)()
+        (cmd_sim_doorbell if args.event_type == "doorbell" else cmd_sim_motion)(args.who, args.when)
     else:
         args.func()
 
