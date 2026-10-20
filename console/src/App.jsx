@@ -93,6 +93,7 @@ export default function App() {
   const [events, setEvents] = useState([]); // newest first
   const [active, setActive] = useState({});
   const [alerts, setAlerts] = useState([]);
+  const [camera, setCamera] = useState(null);
   const seen = useRef(new Set());
   const timers = useRef({});
   const listRef = useRef(null);
@@ -112,6 +113,15 @@ export default function App() {
       if (fromState) return;
       const p = e.payload || {};
       if (e.type === "home.mode" && p.mode) setMode(p.mode);
+      if (e.type === "cv.detection" && p.frame) {
+        setCamera({
+          frame: p.frame,
+          label: p.label || "unknown",
+          confidence: p.confidence,
+          zone: p.zone || "front_door",
+          ts: e.ts,
+        });
+      }
       if (e.type === "agent.action" && p.tool === "notify") {
         const a = p.args || {};
         const id = `${e.id}|${e.ts}`;
@@ -218,6 +228,16 @@ export default function App() {
       <main>
         <section className="col feed">
           <h2>LIVE FEED</h2>
+          {camera && (
+            <div className={`camera ${camera.label}`}>
+              <img src={`${camera.frame}?t=${encodeURIComponent(camera.ts)}`} alt="camera frame" />
+              <div className="ctag">📷 {pretty(camera.zone).toUpperCase()}</div>
+              <div className="cap">
+                {camera.label === "person" ? "🧍 PERSON DETECTED" : camera.label === "package" ? "📦 PACKAGE" : "NO ONE THERE"}
+                {camera.confidence ? ` · ${Math.round(camera.confidence * 100)}%` : ""}
+              </div>
+            </div>
+          )}
           <div className="list">
             {events.map((e) => {
               const m = META[e.type] || { icon: "•", label: e.type, color: "#9aa5b1" };
