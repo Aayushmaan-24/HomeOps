@@ -92,6 +92,7 @@ export default function App() {
   const [mode, setMode] = useState("normal");
   const [events, setEvents] = useState([]); // newest first
   const [active, setActive] = useState({});
+  const [alerts, setAlerts] = useState([]);
   const seen = useRef(new Set());
   const timers = useRef({});
   const listRef = useRef(null);
@@ -111,6 +112,17 @@ export default function App() {
       if (fromState) return;
       const p = e.payload || {};
       if (e.type === "home.mode" && p.mode) setMode(p.mode);
+      if (e.type === "agent.action" && p.tool === "notify") {
+        const a = p.args || {};
+        const id = `${e.id}|${e.ts}`;
+        const sev = a.severity || "info";
+        setAlerts((prev) => [{ id, title: a.title, body: a.body, severity: sev }, ...prev].slice(0, 3));
+        const ttl = sev === "critical" ? 30000 : sev === "warning" ? 12000 : 8000;
+        setTimeout(() => setAlerts((prev) => prev.filter((x) => x.id !== id)), ttl);
+      }
+      if (e.type === "home.mode" && p.mode === "normal") {
+        setAlerts((prev) => prev.filter((x) => x.severity !== "critical"));
+      }
       if (e.type.startsWith("sensor.") || e.type.startsWith("cv.")) pulse("perception");
       if (
         e.type === "home.mode" ||
@@ -159,7 +171,7 @@ export default function App() {
   }, [reasoning.length]);
 
   return (
-    <div className={`app mode-${mode}`}>
+    <div className={`app mode-${mode}${alerts.some((a) => a.severity === "critical") ? " flash" : ""}`}>
       <header>
         <div className="brand">
           <span className="logo">◈</span>
@@ -172,6 +184,20 @@ export default function App() {
           <div className="badge">{mode === "security" ? "🔒 SECURITY" : "🏠 NORMAL"}</div>
         </div>
       </header>
+
+      {alerts.length > 0 && (
+        <div className="alerts">
+          {alerts.map((a) => (
+            <div key={a.id} className={`alert ${a.severity}`}>
+              <span className="aicon">{a.severity === "critical" ? "🚨" : a.severity === "warning" ? "⚠️" : "ℹ️"}</span>
+              <div>
+                <div className="atitle">{a.title}</div>
+                <div className="abody">{a.body}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <section className="zones">
         <div className="zones-label">PERIMETER</div>
