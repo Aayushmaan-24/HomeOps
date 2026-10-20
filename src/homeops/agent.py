@@ -42,6 +42,7 @@ Rules:
   * unknown (or who is missing) at night, or at any time while mode is security: call notify with
     severity "critical". If the mode is normal, also call arm_security for front_door, back_door and garage.
     Then speak one short warning.
+- The event includes what the camera saw (computer vision). Mention it in your reasoning. If the camera shows a person but who is delivery, or shows no person for a friend or unknown visitor, say the camera and the report disagree and treat it as unknown.
 - Do not call set_mode when arm_security or disarm_security already covers it.
 - Use at most one notify and one speak per event.
 """

@@ -60,6 +60,46 @@ def _handle_voice_utterance(event: dict[str, Any]) -> None:
         logger.error("voice.utterance run failed: %s", exc)
 
 
+def _perceive(payload: dict[str, Any], zone: str) -> str:
+    """Run local YOLO on the event's camera frame, post cv.detection, return a summary."""
+    image = payload.get("image")
+    if not image or not os.path.exists(image):
+        return "no camera frame available"
+    try:
+        from homeops.perception import detect
+
+        out = "console/public/frames/latest.jpg"
+        res = detect(image, out)
+        if res["people"] > 0:
+            label = "person"
+            summary = f"{res['people']} person(s) detected at the door"
+        elif payload.get("who") == "delivery":
+            label = "package"
+            summary = "no people detected, a parcel is on the doorstep"
+        else:
+            label = "nothing"
+            summary = "no person or parcel detected"
+        try:
+            _post_to_bus(
+                EventType.cv_detection,
+                {
+                    "zone": zone,
+                    "label": label,
+                    "confidence": max((i["confidence"] for i in res["items"]), default=0.0),
+                    "people": res["people"],
+                    "objects": res["objects"],
+                    "frame": "/frames/latest.jpg",
+                },
+                source="brain",
+            )
+        except Exception as exc:
+            logger.warning("could not post cv.detection: %s", exc)
+        return summary
+    except Exception as exc:
+        logger.error("perception failed: %s", exc)
+        return "camera analysis failed"
+
+
 def _handle_sensor_event(event: dict[str, Any]) -> None:
     """React to sensor.doorbell / sensor.motion events."""
     import httpx as _httpx
@@ -81,8 +121,10 @@ def _handle_sensor_event(event: dict[str, Any]) -> None:
     event_type = event.get("type", "")
     who = payload.get("who") or "unknown"
     when = payload.get("when") or "unspecified"
+    seen = _perceive(payload, zone)
     text = (
         f"Event: {event_type} at {zone}. Who: {who}. Time of day: {when}. "
+        f"Camera: {seen}. "
         f"Current mode is {mode}. Decide what to do and use your tools."
     )
     try:

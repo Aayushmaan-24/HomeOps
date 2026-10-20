@@ -40,3 +40,4 @@ console/dist/
 # Node / Frontend
 node_modules/
 console/dist/
+console/public/frames/

@@ -89,6 +89,7 @@ def cmd_sim_doorbell(who=None, when=None) -> None:
     payload = {"zone": "front_door"}
     if who:
         payload["who"] = who
+        payload["image"] = f"samples/{who}.jpeg"
     if when:
         payload["when"] = when
     _post_event("sensor.doorbell", "event-sim", payload)
