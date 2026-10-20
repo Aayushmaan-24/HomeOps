@@ -47,6 +47,33 @@ def _handle_cli_command(event: dict[str, Any]) -> None:
         logger.error("cli.command run failed: %s", exc)
 
 
+def _voice_context(text: str) -> str:
+    """Add live home context so the agent never has to ask what mode it is in."""
+    from datetime import datetime, timezone
+
+    mode = "normal"
+    camera = "nothing in the last 2 minutes"
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            state = client.get(f"{BUS_URL}/state").json()
+        mode = state.get("mode", "normal")
+        for ev in reversed(state.get("events", [])):
+            if ev.get("type") == "cv.detection":
+                age = (datetime.now(timezone.utc) - datetime.fromisoformat(ev["ts"])).total_seconds()
+                if age <= 120:
+                    p = ev.get("payload", {})
+                    camera = f"{p.get('label', 'unknown')} ({p.get('people', 0)} person(s)) seen {int(age)}s ago"
+                break
+    except Exception as exc:
+        logger.warning("could not build voice context: %s", exc)
+    tod = "day" if 7 <= datetime.now().hour < 19 else "night"
+    return (
+        f"The user says: {text!r}. "
+        f"Context: current mode is {mode}; local time of day is {tod}; camera: {camera}. "
+        "Use this context and do not ask the user for it."
+    )
+
+
 def _handle_voice_utterance(event: dict[str, Any]) -> None:
     """React to voice.utterance events."""
     payload = event.get("payload", {})
@@ -54,7 +81,7 @@ def _handle_voice_utterance(event: dict[str, Any]) -> None:
     if not text:
         return
     try:
-        run(text)
+        run(_voice_context(text))
         logger.info("handled voice.utterance -> run(%r)", text)
     except Exception as exc:
         logger.error("voice.utterance run failed: %s", exc)
