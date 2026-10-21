@@ -49,10 +49,12 @@ def _handle_cli_command(event: dict[str, Any]) -> None:
 
 def _voice_context(text: str) -> str:
     """Add live home context so the agent never has to ask what mode it is in."""
+    import re
     from datetime import datetime, timezone
 
     mode = "normal"
     camera = "nothing in the last 2 minutes"
+    cam_when = None
     try:
         with httpx.Client(timeout=10.0) as client:
             state = client.get(f"{BUS_URL}/state").json()
@@ -63,13 +65,22 @@ def _voice_context(text: str) -> str:
                 if age <= 120:
                     p = ev.get("payload", {})
                     camera = f"{p.get('label', 'unknown')} ({p.get('people', 0)} person(s)) seen {int(age)}s ago"
+                    cam_when = p.get("when")
                 break
     except Exception as exc:
         logger.warning("could not build voice context: %s", exc)
-    tod = "day" if 7 <= datetime.now().hour < 19 else "night"
+    low = text.lower()
+    if re.search(r"\b(night|midnight|dark|late)\b", low):
+        tod = "night (stated by the user)"
+    elif re.search(r"\b(daytime|morning|afternoon|noon)\b", low):
+        tod = "day (stated by the user)"
+    elif cam_when in ("day", "night"):
+        tod = f"{cam_when} (from the camera scene)"
+    else:
+        tod = "day" if 7 <= datetime.now().hour < 19 else "night"
     return (
         f"The user says: {text!r}. "
-        f"Context: current mode is {mode}; local time of day is {tod}; camera: {camera}. "
+        f"Context: current mode is {mode}; time of day is {tod}; camera: {camera}. "
         "Use this context and do not ask the user for it."
     )
 
@@ -116,6 +127,7 @@ def _perceive(payload: dict[str, Any], zone: str) -> str:
                     "people": res["people"],
                     "objects": res["objects"],
                     "frame": "/frames/latest.jpg",
+                    "when": payload.get("when"),
                 },
                 source="brain",
             )
