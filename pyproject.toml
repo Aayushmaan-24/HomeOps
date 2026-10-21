@@ -23,8 +23,13 @@ server = [
 # Strands agent + brain. Install in a SEPARATE environment (venv-agent):
 # strands-agents needs mcp<2.2 while fastmcp needs mcp 2.x.
 agent = [
-    "strands-agents[gemini]",
+    "strands-agents[gemini,openai]",
     "python-dotenv",
+]
+# Local computer vision for the camera frames (install the CPU build of torch first, see README).
+perception = [
+    "ultralytics",
+    "opencv-python-headless",
 ]
 dev = [
     "pytest",
