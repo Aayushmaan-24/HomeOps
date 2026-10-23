@@ -1,0 +1,23 @@
+/*
+ * Design tokens and base element styles shared by the main console
+ * (index.html -> main.jsx -> styles.css) and the assistant simulation page
+ * (assistant.html -> assistant.jsx -> assistant.css).
+ *
+ * Only values that are identical on both pages live here. Page-specific tokens
+ * (--card, --line, --accent, --accent-soft/--soft, --head) stay in the page
+ * stylesheet, and so does each page's root font-size, which differs on purpose:
+ * console clamps at 14px/1.05vw, assistant at 15px/1.1vw.
+ */
+:root {
+  /* Shared surface + text colours */
+  --bg: #0a1017;
+  --text: #e8eef5;
+  --muted: #8a99a8;
+
+  /* Shared type stack (the console previously declared this inline) */
+  --font-sans: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-sans); }
