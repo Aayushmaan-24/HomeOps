@@ -16,6 +16,12 @@ from homeops.events import EventType as HomeEventType
 
 logger = logging.getLogger(__name__)
 
+# Suppress the noisy Strands SDK warning about reasoningContent.
+# Groq's gpt-oss models return reasoningContent, but the Chat Completions API
+# doesn't support it in multi-turn messages. The SDK already filters it out;
+# this warning is harmless and clutters the console.
+logging.getLogger("strands.models.openai").setLevel(logging.ERROR)
+
 dotenv.load_dotenv()
 
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "gemini")

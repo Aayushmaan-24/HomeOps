@@ -87,10 +87,57 @@ def _voice_context(text: str) -> str:
 
 def _handle_voice_utterance(event: dict[str, Any]) -> None:
     """React to voice.utterance events."""
+    import re
+
     payload = event.get("payload", {})
     text = payload.get("text", "")
     if not text:
         return
+
+    # When the user reports a visitor or motion at a zone via voice, also run
+    # perception so the dashboard gets a cv.detection event and a fresh frame,
+    # just like a sensor.doorbell / sensor.motion event would produce.
+    low = text.lower()
+    visitor_keywords = ("stranger", "visitor", "someone", "person", "delivery", "package", "parcel", "at the door", "at my door", "rang the bell", "doorbell", "motion", "moving")
+    is_visitor_report = any(k in low for k in visitor_keywords)
+    if is_visitor_report:
+        zone = "front_door"
+        # The voice payload may not carry an image path the way a sensor event does.
+        # Supply a default sample frame so perception still produces a cv.detection event
+        # and a fresh frame in the dashboard, matching the terminal simulation flow.
+        percept_payload = dict(payload)
+        if not percept_payload.get("image"):
+            percept_payload["image"] = "samples/unknown.png"
+        try:
+            seen = _perceive(percept_payload, zone)
+        except Exception as exc:
+            logger.warning("voice utterance perception failed: %s", exc)
+            seen = "camera analysis failed"
+        try:
+            mode = "normal"
+            with httpx.Client(timeout=10.0) as client:
+                state = client.get(f"{BUS_URL}/state").json()
+                mode = state.get("mode", "normal")
+        except Exception:
+            mode = "normal"
+        who = "unknown"
+        when = "unspecified"
+        # Try to infer who/when from the voice text when the payload doesn't carry it.
+        if payload.get("who"):
+            who = payload["who"]
+        if payload.get("when"):
+            when = payload["when"]
+        else:
+            if re.search(r"\b(night|midnight|dark|late)\b", low):
+                when = "night"
+            elif re.search(r"\b(daytime|morning|afternoon|noon|day)\b", low):
+                when = "day"
+        text = (
+            f"Event: voice.utterance at {zone}. Who: {who}. Time of day: {when}. "
+            f"Camera: {seen}. "
+            f"Current mode is {mode}. Decide what to do and use your tools."
+        )
+
     try:
         run(_voice_context(text))
         logger.info("handled voice.utterance -> run(%r)", text)
