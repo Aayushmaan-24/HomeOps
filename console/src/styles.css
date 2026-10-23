@@ -105,10 +105,10 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
 .trace {
   min-width: 0;
   min-height: 0;
-  padding: 0.85rem;
+  padding: 0.45rem;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.4rem;
 }
 .rail { grid-area: rail; border-right: 1px solid var(--line); overflow-y: auto; }
 .center { grid-area: center; }
@@ -129,13 +129,14 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  padding: 0.45rem 0.7rem;
+  padding: 0.32rem 0.7rem;
   background: rgba(0, 0, 0, 0.22);
   border-bottom: 1px solid var(--line);
   font-size: 0.58rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--muted);
+  flex: 0 0 auto;
 }
 .pmeta {
   color: var(--accent);
@@ -148,7 +149,7 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
    Left rail
    --------------------------------------------------------------------------- */
 
-.modebody { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem; }
+.modebody { display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0.7rem; }
 .modedot { flex: none; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--accent); }
 .modedot.armed { background: var(--red); box-shadow: 0 0 0 0.22rem rgba(255, 90, 95, 0.14); }
 .modedot.clear { background: var(--green); box-shadow: 0 0 0 0.22rem rgba(127, 209, 160, 0.12); }
@@ -165,8 +166,8 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
 .sys {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.42rem 0.7rem;
+  gap: 0.5rem;
+  padding: 0.3rem 0.7rem;
   border-top: 1px solid rgba(255, 255, 255, 0.045);
   font-size: 0.7rem;
 }
@@ -199,7 +200,7 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
    Center: perception + event feed
    --------------------------------------------------------------------------- */
 
-.perception { flex: none; }
+.perception { flex: 0 0 auto; }
 .frame {
   display: flex;
   align-items: center;
@@ -244,7 +245,7 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
 .frame-cap .tag.danger { border-color: rgba(255, 90, 95, 0.5); color: #ff9a9c; }
 .frame-cap .tag.info { border-color: rgba(138, 180, 240, 0.45); color: #9cc0f2; }
 
-.feed { flex: 1; min-height: 6rem; }
+.feed { flex: 1 1 auto; min-height: 5rem; }
 .feed .list { flex: 1; min-height: 0; overflow-y: auto; }
 .list::-webkit-scrollbar { width: 6px; }
 .list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 3px; }
@@ -253,7 +254,7 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.4rem 0.55rem;
+  padding: 0.3rem 0.55rem;
   border-bottom: 1px solid var(--line);
 }
 .fchips { display: flex; flex-wrap: wrap; gap: 0.25rem; flex: 1 1 auto; }
@@ -328,10 +329,10 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
 
 .row {
   display: grid;
-  grid-template-columns: 4.2rem 4.9rem minmax(0, 1fr) auto;
+  grid-template-columns: 4rem 4.7rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.34rem 0.7rem;
+  gap: 0.45rem;
+  padding: 0.28rem 0.6rem;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
   animation: slide 0.3s ease-out;
 }
@@ -359,11 +360,132 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
 }
 
 /* ---------------------------------------------------------------------------
+   Simulation control panel (compact rail card)
+   --------------------------------------------------------------------------- */
+
+/* Language: reuse the same controls the rest of the console already uses.
+   Buttons use the `.tool`-class border/radius/background system (not the
+   larger `.bak` QA tokens which are not defined in the current stylesheet).
+   Dropdowns use the same control treatment as `.fsearch`. */
+
+.sim-panel .sim-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.sim-panel .sim-spacer {
+  grid-column: 1 / -1;
+  height: 0.2rem;
+}
+
+.sim-panel label {
+  font-size: 0.54rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sim-panel select {
+  width: 100%;
+  padding: 0.22rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.3rem;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.62rem;
+  appearance: none;
+  background-image: radial-gradient(
+    circle at right 0.45rem center,
+    #9aa6b4 0,
+    #9aa6b4 0.4rem,
+    transparent 0.4rem
+  );
+  background-repeat: no-repeat;
+  background-size: 0.6rem 0.6rem;
+  background-position: right 0.4rem center;
+  cursor: pointer;
+}
+
+.sim-panel select option {
+  background: #0c141b;
+  color: var(--text);
+}
+
+.sim-panel .sim-quick {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.sim-panel .sim-quick button,
+.sim-panel .sim-fire button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 0.3rem;
+  border: 1px solid var(--line);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.sim-panel .sim-quick button {
+  padding: 0.22rem 0.55rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.52rem;
+  font-weight: 500;
+}
+
+.sim-panel .sim-quick button:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sim-panel .sim-quick button:active {
+  transform: translateY(1px);
+}
+
+.sim-panel .sim-quick button:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.sim-panel .sim-fire button {
+  margin-top: 0;
+  padding: 0.28rem 0.7rem;
+  background: rgba(255, 90, 95, 0.12);
+  color: #ff5a5f;
+  border-color: rgba(255, 90, 95, 0.5);
+  font-size: 0.58rem;
+  font-weight: 600;
+}
+
+.sim-panel .sim-fire button:hover {
+  background: rgba(255, 90, 95, 0.2);
+  border-color: rgba(255, 90, 95, 0.75);
+}
+
+.sim-panel .sim-fire button:active {
+  background: rgba(255, 90, 95, 0.18);
+  border-color: rgba(255, 90, 95, 0.85);
+}
+
+.sim-panel .sim-fire button:focus-visible {
+  outline: 1px solid #ff5a5f;
+  outline-offset: 1px;
+}
+
+/* ---------------------------------------------------------------------------
    Right: agent trace
    --------------------------------------------------------------------------- */
 
-.tracebody { position: relative; flex: 1; min-height: 0; display: flex; }
-.timeline { flex: 1; min-height: 0; overflow-y: auto; position: relative; padding: 0.7rem 0.7rem 0.7rem 0.55rem; }
+.tracebody { position: relative; flex: 1 1 auto; min-height: 0; display: flex; }
+.timeline { flex: 1; min-height: 0; overflow-y: auto; position: relative; padding: 0.4rem 0.7rem 0.4rem 0.5rem; }
 .timeline::before {
   content: "";
   position: absolute;
@@ -377,8 +499,8 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
 .step {
   position: relative;
   display: flex;
-  gap: 0.55rem;
-  padding-bottom: 0.65rem;
+  gap: 0.5rem;
+  padding-bottom: 0.32rem;
   animation: slide 0.3s ease-out;
 }
 .node {
@@ -393,12 +515,12 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
 }
 .step.action .node { background: var(--accent); }
 .step.say .node { background: #e3c46e; }
-.body { flex: 1; min-width: 0; }
+.body { flex: 1 1 auto; min-width: 0; }
 .meta {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 0.22rem;
+  gap: 0.4rem;
+  margin-bottom: 0.12rem;
   font-size: 0.54rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -412,18 +534,18 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
 .meta .src { margin-left: auto; color: #4f5d6b; letter-spacing: 0.1em; }
 .step.thought p {
   margin: 0;
-  padding: 0.5rem 0.65rem;
+  padding: 0.28rem 0.6rem;
   border: 1px solid var(--line);
   border-left: 2px solid rgba(138, 180, 240, 0.45);
   border-radius: 0.4rem;
   background: rgba(255, 255, 255, 0.03);
   font-size: 0.74rem;
-  line-height: 1.45;
+  line-height: 1.4;
   color: #cdd7e1;
   overflow-wrap: anywhere;
 }
 .tool {
-  padding: 0.42rem 0.6rem;
+  padding: 0.28rem 0.6rem;
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
   border-radius: 0.4rem;
@@ -434,7 +556,7 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.32em; white
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.3rem 0.55rem;
+  gap: 0.25rem 0.5rem;
   min-width: 0;
 }
 .tool code {

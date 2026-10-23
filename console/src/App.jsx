@@ -4,6 +4,45 @@ import { modeLabel } from "./eventMeta.js";
 
 const BUS_URL = import.meta.env.VITE_BUS_URL || "http://localhost:8000";
 const ZONES = ["front_door", "back_door", "garage"];
+
+// Simulation control panel state. Dropdown changes only update local state;
+// the bus is touched once, by the Fire button, using the same payloads the CLI
+// sim commands already post (sensor.doorbell / sensor.motion with optional who +
+// when). Home/Leaving/Status map to the CLI commands the agent already knows.
+const SIM_EVENT_TYPES = [
+  { value: "sensor.doorbell", label: "Doorbell" },
+  { value: "sensor.motion", label: "Motion" },
+];
+const SIM_WHO = [
+  { value: "", label: "—" },
+  { value: "friend", label: "Friend" },
+  { value: "delivery", label: "Delivery" },
+  { value: "unknown", label: "Unknown" },
+];
+const SIM_WHEN = [
+  { value: "", label: "—" },
+  { value: "day", label: "Day" },
+  { value: "night", label: "Night" },
+];
+
+async function postEvent(eventType, source, payload) {
+  const resp = await fetch(`${BUS_URL}/events`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: eventType, source, payload }),
+  });
+  if (!resp.ok) {
+    console.error(`event post failed: ${resp.status}`);
+  }
+}
+
+function fireSimulation(eventType, who, when) {
+  const payload = { zone: "front_door" };
+  if (who) payload.who = who;
+  if (when) payload.when = when;
+  // Mirror the already-tested CLI sim payloads (event-sim source).
+  postEvent(eventType, "event-sim", payload);
+}
 const pretty = (s) => String(s).replace(/_/g, " ");
 
 // Per-type presentation only. Hues stay restrained: green for operator input,
@@ -252,6 +291,9 @@ const CARDS = [
 
 export default function App() {
   const [mode, setMode] = useState("normal");
+  const [simEventType, setSimEventType] = useState("sensor.doorbell");
+  const [simWho, setSimWho] = useState("");
+  const [simWhen, setSimWhen] = useState("");
   const [events, setEvents] = useState([]); // newest first
   const [feedCategory, setFeedCategory] = useState("all");
   const [feedQuery, setFeedQuery] = useState("");
@@ -467,6 +509,94 @@ export default function App() {
 
       <div className="board">
         <aside className="rail">
+          <div className="panel sim-panel">
+            <div className="panel-head">
+              <span>Simulation</span>
+              <span className="pmeta">fire once</span>
+            </div>
+            <div className="sim-row">
+              <span className="sim-quick">
+                <button
+                  type="button"
+                  className="qa-button"
+                  onClick={() => postEvent("cli.command", "cli", { command: "home" })}
+                >
+                  Home
+                </button>
+                <button
+                  type="button"
+                  className="qa-button"
+                  onClick={() => postEvent("cli.command", "cli", { command: "leaving" })}
+                >
+                  Leaving
+                </button>
+                <button
+                  type="button"
+                  className="qa-button"
+                  onClick={() => postEvent("cli.command", "cli", { command: "status" })}
+                >
+                  Status
+                </button>
+              </span>
+            </div>
+            <div className="sim-spacer" />
+            <div className="sim-row">
+              <label>Event</label>
+              <label>Person</label>
+            </div>
+            <div className="sim-row">
+              <select
+                value={simEventType}
+                onChange={(e) => setSimEventType(e.target.value)}
+                aria-label="Event type to simulate"
+              >
+                {SIM_EVENT_TYPES.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={simWho}
+                onChange={(e) => setSimWho(e.target.value)}
+                aria-label="Person at the door"
+              >
+                {SIM_WHO.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="sim-row">
+              <label>Time</label>
+              <label />
+            </div>
+            <div className="sim-row">
+              <select
+                value={simWhen}
+                onChange={(e) => setSimWhen(e.target.value)}
+                aria-label="Time of day"
+              >
+                {SIM_WHEN.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <div className="sim-spacer" />
+            </div>
+            <div className="sim-spacer" />
+            <div className="sim-fire">
+              <button
+                type="button"
+                onClick={() => fireSimulation(simEventType, simWho, simWhen)}
+              >
+                Fire
+              </button>
+            </div>
+          </div>
+
           <div className="panel">
             <div className="panel-head">
               <span>Home mode</span>
