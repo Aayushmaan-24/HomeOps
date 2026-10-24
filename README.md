@@ -94,6 +94,32 @@ Or use the assistant page: "I'm leaving", "I'm home", "stranger at the door at n
 
 Each agent run uses about 3 to 5 LLM requests, so free-tier limits apply.
 
+## Screenshots
+
+### Main Dashboard
+![HomeOps Dashboard](screenshots/homeops-dashboard.png)
+
+### Voice Assistant
+![HomeOps Voice Assistant](screenshots/homeops-va.png)
+
+### Visitor and Delivery Scenarios
+![Friend Arrival](screenshots/friend-arrival.png)
+
+![Package Delivery](screenshots/package-delivery.png)
+
+![Unknown Visitor — Dashboard](screenshots/unknown-visitor-db.png)
+
+![Unknown Visitor — Voice Assistant](screenshots/unknown-visitor-va.png)
+
+### Home and Away Modes
+![Leaving Home — Dashboard](screenshots/leaving-home-db.png)
+
+![Leaving Home — Voice Assistant](screenshots/leaving-home-va.png)
+
+![Welcome Home — Dashboard](screenshots/welcome-home-db.png)
+
+![Welcome Home — Voice Assistant](screenshots/welcome-home-va.png)
+
 ## Project layout
 
 - `src/homeops/bus.py`: event bus (FastAPI, SSE)
