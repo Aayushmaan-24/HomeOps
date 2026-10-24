@@ -97,27 +97,37 @@ Each agent run uses about 3 to 5 LLM requests, so free-tier limits apply.
 ## Screenshots
 
 ### Main Dashboard
+HomeOps Dashboard — Live home monitoring, events, and security status.
 ![HomeOps Dashboard](screenshots/homeops-dashboard.png)
 
 ### Voice Assistant
+HomeOps Voice Assistant — Interact with the home agent using voice or text.
 ![HomeOps Voice Assistant](screenshots/homeops-va.png)
 
 ### Visitor and Delivery Scenarios
+Friend Arrival — Handling a known visitor at the door.
 ![Friend Arrival](screenshots/friend-arrival.png)
 
+Package Delivery — Handling a delivery visitor.
 ![Package Delivery](screenshots/package-delivery.png)
 
+Unknown Visitor — Dashboard — Dashboard response to an unknown visitor.
 ![Unknown Visitor — Dashboard](screenshots/unknown-visitor-db.png)
 
+Unknown Visitor — Voice Assistant — Voice assistant response to an unknown visitor.
 ![Unknown Visitor — Voice Assistant](screenshots/unknown-visitor-va.png)
 
 ### Home and Away Modes
+Dashboard view when leaving home.
 ![Leaving Home — Dashboard](screenshots/leaving-home-db.png)
 
+Assistant interaction for leaving home.
 ![Leaving Home — Voice Assistant](screenshots/leaving-home-va.png)
 
+Dashboard view when returning home.
 ![Welcome Home — Dashboard](screenshots/welcome-home-db.png)
 
+Assistant interaction for returning home.
 ![Welcome Home — Voice Assistant](screenshots/welcome-home-va.png)
 
 ## Project layout
